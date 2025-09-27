@@ -4,3 +4,5 @@ pandas
 numpy
 shap
 matplotlib
+seaborn
+requests
