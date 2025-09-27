@@ -117,17 +117,27 @@ with tab2:
         col2.markdown(f"📊 Probability of Default: <span style='color:{prob_color}; font-weight:bold'>{probability:.2f}</span>", unsafe_allow_html=True)
 
         # SHAP explainability
-        st.subheader("📈 Feature Impact (SHAP Values)")
-        explainer = shap.TreeExplainer(model)
-        shap_values = explainer.shap_values(input_data)
+st.subheader("📈 Feature Impact (SHAP Values)")
+explainer = shap.TreeExplainer(model)
+shap_values = explainer.shap_values(input_data)
 
-        shap_df = pd.DataFrame(shap_values[1][0], index=input_data.columns, columns=["SHAP Value"])
-        shap_df = shap_df.sort_values("SHAP Value", ascending=True)
-        
-        plt.figure(figsize=(8,5))
-        sns.barplot(x="SHAP Value", y=shap_df.index, data=shap_df, palette="coolwarm")
-        plt.title("Feature Importance Impact")
-        st.pyplot(plt)
+# Handle binary classification output correctly
+if isinstance(shap_values, list) and len(shap_values) == 2:
+    shap_for_default = shap_values[1][0]  # Class 1 = default
+else:
+    shap_for_default = shap_values[0]  # fallback for older shap versions
+
+shap_df = pd.DataFrame(shap_for_default, index=input_data.columns, columns=["SHAP Value"])
+shap_df = shap_df.sort_values("SHAP Value", ascending=True)
+
+# Plot
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+plt.figure(figsize=(8,5))
+sns.barplot(x="SHAP Value", y=shap_df.index, data=shap_df, palette="coolwarm")
+plt.title("Feature Importance Impact")
+st.pyplot(plt)
 
 # ----- Footer -----
 st.markdown("""
