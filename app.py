@@ -1,11 +1,8 @@
 import streamlit as st
 import pandas as pd
 import pickle
-import shap
 import requests
 import os
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 # ----- Model Setup -----
 MODEL_URL = "https://huggingface.co/spaces/ujan2003/loan-default-prediction/resolve/main/model.pkl"
@@ -31,7 +28,7 @@ st.set_page_config(
 st.markdown("""
 <div style='text-align: center; background-color: #f0f2f6; padding: 20px; border-radius: 15px'>
 <h1 style='color:#1f77b4;'>💳 Loan Default Prediction Dashboard</h1>
-<p>Predict loan defaults in real-time with explainable AI</p>
+<p>Predict loan defaults in real-time</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -115,26 +112,6 @@ with tab2:
         col1, col2 = st.columns(2)
         col1.metric("🔮 Default Prediction", "Yes (1)" if prediction == 1 else "No (0)")
         col2.markdown(f"📊 Probability of Default: <span style='color:{prob_color}; font-weight:bold'>{probability:.2f}</span>", unsafe_allow_html=True)
-
-        # ----- SHAP Explainability -----
-        st.subheader("📈 Feature Impact (SHAP Values)")
-        explainer = shap.TreeExplainer(model)
-        shap_values = explainer.shap_values(input_data)
-
-        # Handle binary classification
-        if isinstance(shap_values, list) and len(shap_values) == 2:
-            shap_for_default = shap_values[1][0]  # Class 1 = default
-        else:
-            shap_for_default = shap_values[0]  # fallback
-
-        shap_df = pd.DataFrame(shap_for_default, index=input_data.columns, columns=["SHAP Value"])
-        shap_df = shap_df.sort_values("SHAP Value", ascending=True)
-
-        # Plot
-        plt.figure(figsize=(8,5))
-        sns.barplot(x="SHAP Value", y=shap_df.index, data=shap_df, palette="coolwarm")
-        plt.title("Feature Importance Impact")
-        st.pyplot(plt)
 
 # ----- Footer -----
 st.markdown("""
